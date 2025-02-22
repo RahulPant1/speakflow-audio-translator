@@ -12,9 +12,8 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [originalText, setOriginalText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   const translateMutation = useMutation({
@@ -36,7 +35,6 @@ const Index = () => {
     },
     onSuccess: (translatedText) => {
       setTranslatedText(translatedText);
-      generateSpeech(translatedText);
     },
     onError: (error) => {
       toast({
@@ -47,26 +45,40 @@ const Index = () => {
     },
   });
 
-  const generateSpeech = async (text: string) => {
-    try {
-      // Using Google Translate TTS as a simple solution
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
-        text
-      )}&tl=${targetLanguage}&client=tw-ob`;
-      
-      setAudioUrl(url);
-      
-      if (audioRef.current) {
-        audioRef.current.load();
-        await audioRef.current.play();
-      }
-    } catch (error) {
+  const generateSpeech = (text: string) => {
+    if (!window.speechSynthesis) {
+      toast({
+        title: "Error",
+        description: "Text-to-speech is not supported in this browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = targetLanguage;
+    
+    utterance.onstart = () => {
+      setIsPlaying(true);
+    };
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+    };
+
+    utterance.onerror = () => {
+      setIsPlaying(false);
       toast({
         title: "Text-to-Speech Error",
         description: "Failed to generate speech",
         variant: "destructive",
       });
-    }
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const startRecording = () => {
@@ -122,8 +134,8 @@ const Index = () => {
   };
 
   const playTranslation = () => {
-    if (audioRef.current && audioUrl) {
-      audioRef.current.play();
+    if (translatedText) {
+      generateSpeech(translatedText);
     }
   };
 
@@ -156,10 +168,8 @@ const Index = () => {
               originalText={originalText}
               translatedText={translatedText}
               onPlayTranslation={playTranslation}
-              canPlayAudio={!!audioUrl}
+              canPlayAudio={!!translatedText}
             />
-
-            <audio ref={audioRef} src={audioUrl || ""} />
           </div>
         </div>
       </div>
