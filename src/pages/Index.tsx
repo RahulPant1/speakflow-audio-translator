@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import LanguageSelector from "@/components/LanguageSelector";
 import RecordButton from "@/components/RecordButton";
 import TranslationDisplay from "@/components/TranslationDisplay";
@@ -13,7 +13,7 @@ const Index = () => {
   const [translatedText, setTranslatedText] = useState("");
   const { toast } = useToast();
 
-  let recognition: SpeechRecognition | null = null;
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const startRecording = () => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -25,12 +25,12 @@ const Index = () => {
       return;
     }
 
-    recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = sourceLanguage;
+    recognitionRef.current = new window.webkitSpeechRecognition();
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.lang = sourceLanguage;
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join("");
@@ -39,7 +39,7 @@ const Index = () => {
       setTranslatedText("Translation will be implemented in the next step...");
     };
 
-    recognition.onerror = (event: SpeechRecognitionError) => {
+    recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
       toast({
         title: "Error",
         description: `Speech recognition error: ${event.error}`,
@@ -48,13 +48,14 @@ const Index = () => {
       stopRecording();
     };
 
-    recognition.start();
+    recognitionRef.current.start();
     setIsRecording(true);
   };
 
   const stopRecording = () => {
-    if (recognition) {
-      recognition.stop();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
     setIsRecording(false);
   };
