@@ -5,8 +5,7 @@ import RecordButton from "@/components/RecordButton";
 import TranslationDisplay from "@/components/TranslationDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-
-const LIBRETRANSLATE_API_URL = "https://libretranslate.de/translate";
+import translate from "@iamtraction/google-translate";
 
 const Index = () => {
   const [sourceLanguage, setSourceLanguage] = useState("en");
@@ -21,24 +20,11 @@ const Index = () => {
 
   const translateMutation = useMutation({
     mutationFn: async (text: string) => {
-      const response = await fetch(LIBRETRANSLATE_API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          q: text,
-          source: sourceLanguage,
-          target: targetLanguage,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const result = await translate(text, {
+        from: sourceLanguage,
+        to: targetLanguage,
       });
-
-      if (!response.ok) {
-        throw new Error("Translation failed");
-      }
-
-      const data = await response.json();
-      return data.translatedText;
+      return result.text;
     },
     onSuccess: (translatedText) => {
       setTranslatedText(translatedText);
@@ -47,7 +33,7 @@ const Index = () => {
     onError: (error) => {
       toast({
         title: "Translation Error",
-        description: error.message,
+        description: "Failed to translate text",
         variant: "destructive",
       });
     },
