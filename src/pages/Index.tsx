@@ -5,7 +5,6 @@ import RecordButton from "@/components/RecordButton";
 import TranslationDisplay from "@/components/TranslationDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import translate from "@iamtraction/google-translate";
 
 const Index = () => {
   const [sourceLanguage, setSourceLanguage] = useState("en");
@@ -20,11 +19,20 @@ const Index = () => {
 
   const translateMutation = useMutation({
     mutationFn: async (text: string) => {
-      const result = await translate(text, {
-        from: sourceLanguage,
-        to: targetLanguage,
-      });
-      return result.text;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLanguage}|${targetLanguage}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error("Translation failed");
+      }
+
+      const data = await response.json();
+      
+      if (data.responseStatus !== 200) {
+        throw new Error(data.responseDetails || "Translation failed");
+      }
+
+      return data.responseData.translatedText;
     },
     onSuccess: (translatedText) => {
       setTranslatedText(translatedText);
@@ -33,7 +41,7 @@ const Index = () => {
     onError: (error) => {
       toast({
         title: "Translation Error",
-        description: "Failed to translate text",
+        description: error.message || "Failed to translate text",
         variant: "destructive",
       });
     },
