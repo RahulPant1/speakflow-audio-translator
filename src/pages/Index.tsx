@@ -4,6 +4,9 @@ import LanguageSelector from "@/components/LanguageSelector";
 import RecordButton from "@/components/RecordButton";
 import TranslationDisplay from "@/components/TranslationDisplay";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+
+const LIBRETRANSLATE_API_URL = "https://libretranslate.de/translate";
 
 const Index = () => {
   const [sourceLanguage, setSourceLanguage] = useState("en");
@@ -11,9 +14,66 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [originalText, setOriginalText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const translateMutation = useMutation({
+    mutationFn: async (text: string) => {
+      const response = await fetch(LIBRETRANSLATE_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          q: text,
+          source: sourceLanguage,
+          target: targetLanguage,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Translation failed");
+      }
+
+      const data = await response.json();
+      return data.translatedText;
+    },
+    onSuccess: (translatedText) => {
+      setTranslatedText(translatedText);
+      generateSpeech(translatedText);
+    },
+    onError: (error) => {
+      toast({
+        title: "Translation Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateSpeech = async (text: string) => {
+    try {
+      // Using Google Translate TTS as a simple solution
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
+        text
+      )}&tl=${targetLanguage}&client=tw-ob`;
+      
+      setAudioUrl(url);
+      
+      if (audioRef.current) {
+        audioRef.current.load();
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      toast({
+        title: "Text-to-Speech Error",
+        description: "Failed to generate speech",
+        variant: "destructive",
+      });
+    }
+  };
 
   const startRecording = () => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -35,8 +95,7 @@ const Index = () => {
         .map(result => result[0].transcript)
         .join("");
       setOriginalText(transcript);
-      // Here we would typically call the translation API
-      setTranslatedText("Translation will be implemented in the next step...");
+      translateMutation.mutate(transcript);
     };
 
     recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -68,6 +127,12 @@ const Index = () => {
     }
   };
 
+  const playTranslation = () => {
+    if (audioRef.current && audioUrl) {
+      audioRef.current.play();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
@@ -96,7 +161,11 @@ const Index = () => {
             <TranslationDisplay
               originalText={originalText}
               translatedText={translatedText}
+              onPlayTranslation={playTranslation}
+              canPlayAudio={!!audioUrl}
             />
+
+            <audio ref={audioRef} src={audioUrl || ""} />
           </div>
         </div>
       </div>
