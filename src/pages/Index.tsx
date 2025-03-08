@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import LanguageSelector from "@/components/LanguageSelector";
 import RecordButton from "@/components/RecordButton";
@@ -20,13 +19,13 @@ const Index = () => {
     mutationFn: async (text: string) => {
       const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLanguage}|${targetLanguage}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error("Translation failed");
       }
 
       const data = await response.json();
-      
+
       if (data.responseStatus !== 200) {
         throw new Error(data.responseDetails || "Translation failed");
       }
@@ -60,7 +59,7 @@ const Index = () => {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = targetLanguage;
-    
+
     utterance.onstart = () => {
       setIsPlaying(true);
     };
@@ -92,9 +91,12 @@ const Index = () => {
     }
 
     recognitionRef.current = new window.webkitSpeechRecognition();
-    recognitionRef.current.continuous = true;
+    recognitionRef.current.continuous = false; // Changed to false
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = sourceLanguage;
+
+    let timeout: NodeJS.Timeout; // Define timeout outside the onresult function
+
 
     recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
@@ -102,6 +104,14 @@ const Index = () => {
         .join("");
       setOriginalText(transcript);
       translateMutation.mutate(transcript);
+
+       // Clear the timeout if it exists
+       clearTimeout(timeout);
+
+       // Set a new timeout to stop recording after a pause
+       timeout = setTimeout(() => {
+         stopRecording();
+       }, 3000); // Adjust the pause duration (in milliseconds) as needed
     };
 
     recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
