@@ -1,69 +1,76 @@
-# Welcome to your Lovable project
+# Speakflow Audio Translator
 
-## Project info
+Speakflow Audio Translator is a web application that allows users to translate spoken audio from one language to another in real-time. It leverages speech recognition and translation APIs to provide a seamless translation experience.
 
-**URL**: https://lovable.dev/projects/7441add1-4934-44f3-ad19-5aec79c4fd26
+## Features
 
-## How can I edit this code?
+-   **Real-time Audio Translation:** Translates spoken audio from a source language to a target language.
+-   **Language Selection:** Supports multiple languages for both source and target.
+-   **Text-to-Speech:** Converts the translated text into speech.
+-   **User-Friendly Interface:** Simple and intuitive design for ease of use.
 
-There are several ways of editing your application.
+## Technologies Used
 
-**Use Lovable**
+-   **React:** A JavaScript library for building user interfaces.
+-   **TypeScript:** A typed superset of JavaScript that compiles to plain JavaScript.
+-   **Tailwind CSS:** A utility-first CSS framework for rapidly building custom designs.
+-   **Vite:** A build tool that provides a fast and optimized development experience.
+-   **React Query:** For managing, caching, and updating asynchronous data in React applications.
+-   **MyMemory Translation API:** For translating text between languages.
+-   **Web Speech API:** For speech recognition and text-to-speech functionality.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7441add1-4934-44f3-ad19-5aec79c4fd26) and start prompting.
+## Setup Instructions
 
-Changes made via Lovable will be committed automatically to this repo.
+Follow these steps to set up and run the Speakflow Audio Translator:
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+-   Node.js (version 16 or higher)
+-   npm or yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1.  Clone the repository:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+    ```sh
+    git clone <repository-url>
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  Navigate to the project directory:
 
-# Step 3: Install the necessary dependencies.
-npm i
+    ```sh
+    cd speakflow-audio-translator
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+3.  Install the dependencies:
 
-**Edit a file directly in GitHub**
+    ```sh
+    npm install
+    # or
+    yarn install
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Configuration
 
-**Use GitHub Codespaces**
+No specific configuration is required. The application uses the MyMemory Translation API, which is free to use with certain limitations.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Running the Application
 
-## What technologies are used for this project?
+1.  Start the development server:
 
-This project is built with .
+    ```sh
+    npm run dev
+    # or
+    yarn dev
+    ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+2.  Open your browser and navigate to `http://localhost:5173` (or the URL provided by Vite).
 
-## How can I deploy this project?
+## Usage
 
-Simply open [Lovable](https://lovable.dev/projects/7441add1-4934-44f3-ad19-5aec79c4fd26) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+1.  **Select Languages:** Choose the source and target languages from the dropdown menus.
+2.  **Start Recording:** Click the record button to start recording your speech.
+3.  **Speak:** Speak clearly into your microphone. The transcribed text will appear in the "Original Text" area.
+4.  **View Translation:** The translated text will appear in the "Translated Text" area.
+5.  **Play Translation:** Click the play button to hear the translated text spoken aloud.
+6.  **Stop Recording:** Click the record button again to stop recording.
